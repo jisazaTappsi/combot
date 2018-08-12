@@ -7,6 +7,7 @@ import re
 import pandas as pd
 import os
 from decouple import config
+import platform
 
 EMAIL_ID = 'email'
 PASS_ID = 'pass'
@@ -73,8 +74,11 @@ def scrap_word(word, df, html, group_name, group_url):
 
 
 def load_browser_and_login():
-    options = Options()
-    browser = Chrome(chrome_options=options)
+
+    if platform.system() == 'Windows':
+        browser = Chrome(executable_path='chrome_driver_win.exe')
+    else:
+        browser = Chrome()
 
     browser.get(MAIN_URL)
 
