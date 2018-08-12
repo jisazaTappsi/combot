@@ -141,7 +141,7 @@ def scrape_all():
                                  group_url=group_url,
                                  group_name=group_name)
 
-    results.sort_values(by='count', ascending=False).to_excel('potential_candidates.xlsx')
+    results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
 
 
 if __name__ == '__main__':
