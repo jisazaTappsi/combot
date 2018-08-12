@@ -1,0 +1,4 @@
+selenium==3.13.0
+pandas==0.19.1
+django_decouple==2.1
+PyAutoGUI==0.9.36
