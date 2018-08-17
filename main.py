@@ -129,9 +129,19 @@ def get_file(name):
 def scrape_all():
     results = pd.DataFrame(columns=COLUMNS)
 
-    for idx, group_name_and_url in enumerate(get_file('groups.txt')):
+    groups = [('Startup Colombia', 'https://www.facebook.com/groups/startupco/'),
+              ('Networking Uniandes', 'https://www.facebook.com/groups/865992720150688/'),
+              ('AMIGAS EMPRESARIAS COLOMBIA', 'https://www.facebook.com/groups/210084032694930/'),
+              ('Empresarios de Texas Ventas y Servicios', 'https://www.facebook.com/groups/HoustonPasadena'),
+              ('Mujeres Empresarias', 'https://www.facebook.com/groups/mujerescali'),
+              ('Wikiempresarios', 'https://www.facebook.com/groups/1654905801494696'),
+              ('Emprendedores a full', 'https://www.facebook.com/groups/337890819926075'),
+              ('Inversionistas Emprendedores Mexicanos', 'https://www.facebook.com/groups/233961420144969'),
+              ('Emprendedores', 'https://www.facebook.com/groups/1695235677387282')]
+    #groups = get_file('groups.txt')
+    for idx, (group_name, group_url) in enumerate(groups):
 
-        group_name, group_url = group_name_and_url.split(',')
+        #group_name, group_url = group_name_and_url.split(',')
         browser.get(group_url)
 
         scroll_down(group_name)
