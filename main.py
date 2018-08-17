@@ -119,7 +119,7 @@ def save_and_get_html():
 
 
 def get_file(name):
-    with open(name, 'r', encoding='utf-8') as my_file:
+    with open(name, 'rb', encoding='utf-8') as my_file:
         return my_file.readlines()
 
 
