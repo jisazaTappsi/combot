@@ -138,6 +138,23 @@ def scrape_all():
               ('Emprendedores a full', 'https://www.facebook.com/groups/337890819926075'),
               ('Inversionistas Emprendedores Mexicanos', 'https://www.facebook.com/groups/233961420144969'),
               ('Emprendedores', 'https://www.facebook.com/groups/1695235677387282')]
+    
+    keywords = ['trabajo',
+                '#TrabajoSiHay',
+                'buscamos desarrollador',
+                'java',
+                'php',
+                'opportunity',
+                'oportunidad',
+                'profesional',
+                'call center',
+                '#ofertalaboral',
+                'laboral',
+                'perfil',
+                'cv',
+                'hoja de vida',]
+    
+    #keywords = get_file('keywords.txt')
     #groups = get_file('groups.txt')
     for idx, (group_name, group_url) in enumerate(groups):
 
@@ -147,7 +164,7 @@ def scrape_all():
         scroll_down(group_name)
         html = save_and_get_html()
 
-        for word in get_file('keywords.txt'):
+        for word in keywords:
             results = scrap_word(word=word.lower().replace('\n', ''),
                                  df=results,
                                  html=html,
