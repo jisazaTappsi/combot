@@ -43,6 +43,9 @@ def scrap_word(word, df, html, group_name, group_url):
 
     post_pattern = f'>[^>]*\s{word}\s[^<]*<'
     splits = re.compile(post_pattern).split(html)[:-1]
+    
+    # search email
+    splits = [post for post in splits if '@' in post]
 
     # found nothing
     if len(splits) == 0:
