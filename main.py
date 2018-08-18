@@ -7,6 +7,7 @@ import pandas as pd
 import os
 from decouple import config
 import platform
+import values
 
 EMAIL_ID = 'email'
 PASS_ID = 'pass'
@@ -128,43 +129,15 @@ def get_file(name):
 
 def scrape_all():
     results = pd.DataFrame(columns=COLUMNS)
-
-    groups = [('Startup Colombia', 'https://www.facebook.com/groups/startupco/', 100),
-              ('Networking Uniandes', 'https://www.facebook.com/groups/865992720150688/', 1),
-              ('AMIGAS EMPRESARIAS COLOMBIA', 'https://www.facebook.com/groups/210084032694930/', 1),
-              ('Empresarios de Texas Ventas y Servicios', 'https://www.facebook.com/groups/HoustonPasadena', 1),
-              ('Mujeres Empresarias', 'https://www.facebook.com/groups/mujerescali', 1),
-              ('Wikiempresarios', 'https://www.facebook.com/groups/1654905801494696', 1),
-              ('Emprendedores a full', 'https://www.facebook.com/groups/337890819926075', 1),
-              ('Inversionistas Emprendedores Mexicanos', 'https://www.facebook.com/groups/233961420144969', 1),
-              ('Emprendedores', 'https://www.facebook.com/groups/1695235677387282', 1)]
     
-    keywords = ['trabajo',
-                '#TrabajoSiHay',
-                'buscamos desarrollador',
-                'java',
-                'php',
-                'opportunity',
-                'oportunidad',
-                'profesional',
-                'call center',
-                '#ofertalaboral',
-                'laboral',
-                'perfil',
-                'cv',
-                'hoja de vida',]
-    
-    #keywords = get_file('keywords.txt')
-    #groups = get_file('groups.txt')
-    for idx, (group_name, group_url, scroll_steps) in enumerate(groups):
+    for idx, (group_name, group_url, scroll_steps) in enumerate(values.get_groups()):
 
-        #group_name, group_url = group_name_and_url.split(',')
         browser.get(group_url)
 
         scroll_down(group_name, scroll_steps)
         html = save_and_get_html()
 
-        for word in keywords:
+        for word in values.get_keywords():
             results = scrap_word(word=word.lower().replace('\n', ''),
                                  df=results,
                                  html=html,
