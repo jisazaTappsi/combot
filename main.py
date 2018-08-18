@@ -1,5 +1,4 @@
 from selenium.webdriver import Chrome
-from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.keys import Keys
 import time
 import pyautogui
@@ -32,20 +31,22 @@ def get_profile(split):
     return re.search(pattern, almost).group()
 
 
+def filter_posts_with_email(df):
+    return df[df['post'].str.contains('@')]
+
+
 def scrap_word(word, df, html, group_name, group_url):
     """
     :param word: string
     :param df: pandas Dataframe
     :param html: str html
     :param group_url: str
+    :param scroll_steps: number of screens scrolling
     :return: df
     """
 
     post_pattern = f'>[^>]*\s{word}\s[^<]*<'
     splits = re.compile(post_pattern).split(html)[:-1]
-    
-    # search email
-    splits = [post for post in splits if '@' in post]
 
     # found nothing
     if len(splits) == 0:
@@ -63,7 +64,6 @@ def scrap_word(word, df, html, group_name, group_url):
                 else:
                     df.loc[profile, 'post'] += post
             else:
-                #browser.save_screenshot(os.path.join('images', f'{post[:min(20, len(post))]}.png'))
 
                 row = pd.Series({'post': post,
                                  'word': word,
@@ -73,7 +73,7 @@ def scrap_word(word, df, html, group_name, group_url):
 
                 df = df.append(row)
 
-    return df
+    return filter_posts_with_email(df)
 
 
 def load_browser_and_login():
@@ -103,8 +103,8 @@ def enable_permissions():
     pyautogui.click(interval=0.1)
 
 
-def scroll_down(group_name):
-    for i in range(SCROLL_STEPS):
+def scroll_down(group_name, scroll_steps):
+    for i in range(scroll_steps):
         height = SCREEN_HEIGHT * SCROLL_SCREENS
         browser.execute_script(f'window.scrollTo({i * height}, {(i + 1) * height})')
 
@@ -129,15 +129,15 @@ def get_file(name):
 def scrape_all():
     results = pd.DataFrame(columns=COLUMNS)
 
-    groups = [('Startup Colombia', 'https://www.facebook.com/groups/startupco/'),
-              ('Networking Uniandes', 'https://www.facebook.com/groups/865992720150688/'),
-              ('AMIGAS EMPRESARIAS COLOMBIA', 'https://www.facebook.com/groups/210084032694930/'),
-              ('Empresarios de Texas Ventas y Servicios', 'https://www.facebook.com/groups/HoustonPasadena'),
-              ('Mujeres Empresarias', 'https://www.facebook.com/groups/mujerescali'),
-              ('Wikiempresarios', 'https://www.facebook.com/groups/1654905801494696'),
-              ('Emprendedores a full', 'https://www.facebook.com/groups/337890819926075'),
-              ('Inversionistas Emprendedores Mexicanos', 'https://www.facebook.com/groups/233961420144969'),
-              ('Emprendedores', 'https://www.facebook.com/groups/1695235677387282')]
+    groups = [('Startup Colombia', 'https://www.facebook.com/groups/startupco/', 100),
+              ('Networking Uniandes', 'https://www.facebook.com/groups/865992720150688/', 1),
+              ('AMIGAS EMPRESARIAS COLOMBIA', 'https://www.facebook.com/groups/210084032694930/', 1),
+              ('Empresarios de Texas Ventas y Servicios', 'https://www.facebook.com/groups/HoustonPasadena', 1),
+              ('Mujeres Empresarias', 'https://www.facebook.com/groups/mujerescali', 1),
+              ('Wikiempresarios', 'https://www.facebook.com/groups/1654905801494696', 1),
+              ('Emprendedores a full', 'https://www.facebook.com/groups/337890819926075', 1),
+              ('Inversionistas Emprendedores Mexicanos', 'https://www.facebook.com/groups/233961420144969', 1),
+              ('Emprendedores', 'https://www.facebook.com/groups/1695235677387282', 1)]
     
     keywords = ['trabajo',
                 '#TrabajoSiHay',
@@ -156,12 +156,12 @@ def scrape_all():
     
     #keywords = get_file('keywords.txt')
     #groups = get_file('groups.txt')
-    for idx, (group_name, group_url) in enumerate(groups):
+    for idx, (group_name, group_url, scroll_steps) in enumerate(groups):
 
         #group_name, group_url = group_name_and_url.split(',')
         browser.get(group_url)
 
-        scroll_down(group_name)
+        scroll_down(group_name, scroll_steps)
         html = save_and_get_html()
 
         for word in keywords:
