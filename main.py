@@ -13,7 +13,6 @@ EMAIL_ID = 'email'
 PASS_ID = 'pass'
 LOGIN_BUTTON_ID = 'u_0_2'
 SCROLL_SCREENS = 1
-SCROLL_STEPS = int(config('scroll_steps'))
 SCREEN_HEIGHT = 1080
 COORDINATES = (int(config('coordinate_x')), int(config('coordinate_y')))
 COLUMNS = ['post', 'word', 'group_name', 'group_url', 'count']
