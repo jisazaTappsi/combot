@@ -36,3 +36,11 @@ def get_keywords():
 
             # TODO: add new keywords here
             ]
+
+
+def get_groups_to_publish():
+    return [('Startup Colombia', 'https://www.facebook.com/groups/startupco/'),
+            ('Networking Uniandes', 'https://www.facebook.com/groups/865992720150688/'),
+
+            # TODO: add new groups here
+            ]

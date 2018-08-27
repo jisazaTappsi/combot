@@ -1,13 +1,15 @@
-from selenium.webdriver import Chrome
-from selenium.webdriver.common.keys import Keys
+"""
+Gets lots of job vacancies!
+Writes them in leads.xlsx
+"""
+
 import time
-import pyautogui
 import re
 import pandas as pd
 import os
 from decouple import config
-import platform
 import values
+import util
 
 EMAIL_ID = 'email'
 PASS_ID = 'pass'
@@ -41,7 +43,6 @@ def scrap_word(word, df, html, group_name, group_url):
     :param df: pandas Dataframe
     :param html: str html
     :param group_url: str
-    :param scroll_steps: number of screens scrolling
     :return: df
     """
 
@@ -76,34 +77,7 @@ def scrap_word(word, df, html, group_name, group_url):
     return filter_posts_with_email(df)
 
 
-def load_browser_and_login():
-
-    if platform.system() == 'Windows':
-        browser = Chrome(executable_path='chrome_driver_win.exe')
-    else:
-        browser = Chrome()
-
-    browser.get(MAIN_URL)
-
-    email_element = browser.find_element_by_id(EMAIL_ID)
-    email_element.send_keys(config('email'))
-
-    pass_element = browser.find_element_by_id(PASS_ID)
-    pass_element.send_keys(config('pass'))
-
-    pass_element.send_keys(Keys.ENTER)
-
-    enable_permissions()
-
-    return browser
-
-
-def enable_permissions():
-    pyautogui.moveTo(*COORDINATES)
-    pyautogui.click(interval=0.1)
-
-
-def scroll_down(group_name, scroll_steps):
+def scroll_down(group_name, scroll_steps, browser):
     for i in range(scroll_steps):
         height = SCREEN_HEIGHT * SCROLL_SCREENS
         browser.execute_script(f'window.scrollTo({i * height}, {(i + 1) * height})')
@@ -113,7 +87,7 @@ def scroll_down(group_name, scroll_steps):
         time.sleep(0.3)
 
 
-def save_and_get_html():
+def save_and_get_html(browser):
     html = browser.page_source.lower()
     with open('page.html', 'w', encoding='utf-8') as f:
         f.write(html)
@@ -126,15 +100,15 @@ def get_file(name):
         return my_file.readlines()
 
 
-def scrape_all():
+def scrape_all(browser):
     results = pd.DataFrame(columns=COLUMNS)
     
     for idx, (group_name, group_url, scroll_steps) in enumerate(values.get_groups()):
 
         browser.get(group_url)
 
-        scroll_down(group_name, scroll_steps)
-        html = save_and_get_html()
+        scroll_down(group_name, scroll_steps, browser)
+        html = save_and_get_html(browser)
 
         for word in values.get_keywords():
             results = scrap_word(word=word.lower().replace('\n', ''),
@@ -147,6 +121,4 @@ def scrape_all():
 
 
 if __name__ == '__main__':
-
-    browser = load_browser_and_login()
-    scrape_all()
+    scrape_all(util.load_browser_and_login())
