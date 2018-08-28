@@ -39,8 +39,13 @@ def get_keywords():
 
 
 def get_groups_to_publish():
-    return [('Startup Colombia', 'https://www.facebook.com/groups/startupco/'),
-            ('Networking Uniandes', 'https://www.facebook.com/groups/865992720150688/'),
-
+    return [('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
+            ('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
+            ('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
+            ('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
+            ('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
+            ('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
+            ('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
+            ('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
             # TODO: add new groups here
             ]
