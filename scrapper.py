@@ -116,6 +116,8 @@ def scrape_all(browser):
                                  html=html,
                                  group_url=group_url,
                                  group_name=group_name)
+        
+        results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
 
     results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
 
