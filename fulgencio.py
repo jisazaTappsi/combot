@@ -117,9 +117,10 @@ def scrape_all(browser):
                                  group_url=group_url,
                                  group_name=group_name)
 
+        # Save partial result
         results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
 
-    results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
+    return results
 
 
 if __name__ == '__main__':
