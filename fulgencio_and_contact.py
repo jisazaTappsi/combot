@@ -9,7 +9,7 @@ INBOX_CLASS_NAME = '_42ft _4jy0 _4jy4 _517h _51sy'
 
 
 def get_contact_text():
-    return 'Vi que estás publicando una oferta laboral en redes sociales te invitamos a PeakU donde podrás encontrar los candidatos perfecto completamente grátis. https://peaku.co/seleccion_de_personal/seleccion_gratis'
+    return 'Vi que estás publicando una oferta laboral en redes sociales te invitamos a PeakU donde podrás encontrar los candidatos perfectos completamente grátis. https://peaku.co/seleccion_de_personal/seleccion_gratis'
 
 
 if __name__ == '__main__':
