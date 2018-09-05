@@ -20,16 +20,18 @@ if __name__ == '__main__':
 
     for idx, row in results.iterrows():
 
-        print(idx)
-        browser.get(idx)
-        # TODO: test
-        #browser.get('https://www.facebook.com/santiagopsa?fb_dtsg_ag=AdysXi0iM7Yj_xqdJzmHDkdtpJBXEq_IO8ffxkmWoB3MAw%3AAdw1ZMxR3g084CpOJLY8CxrQ0R2cQO_-rCudF2wbWys6OQ')
+        try:
+            browser.get(idx)
+            # TODO: test
+            #browser.get('https://www.facebook.com/santiagopsa?fb_dtsg_ag=AdysXi0iM7Yj_xqdJzmHDkdtpJBXEq_IO8ffxkmWoB3MAw%3AAdw1ZMxR3g084CpOJLY8CxrQ0R2cQO_-rCudF2wbWys6OQ')
 
-        inbox_button = browser.find_element_by_xpath(f"//*[@class='{INBOX_CLASS_NAME}']")
-        inbox_button.click()
+            inbox_button = browser.find_element_by_xpath(f"//*[@class='{INBOX_CLASS_NAME}']")
+            inbox_button.click()
 
-        time.sleep(2)
+            time.sleep(2)
 
-        active_element = browser.switch_to.active_element
-        active_element.send_keys(text)
-        active_element.send_keys(Keys.RETURN)
+            active_element = browser.switch_to.active_element
+            active_element.send_keys(text)
+            active_element.send_keys(Keys.RETURN)
+        except:
+            pass
