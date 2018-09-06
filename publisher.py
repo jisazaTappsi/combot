@@ -1,5 +1,6 @@
 import time
 import values
+import fulgencio
 
 
 TEXT_BOX_CLASS_NAME = '_4h98 navigationFocus'
@@ -16,8 +17,12 @@ def publish_text(text, browser):
 
         browser.get(group_url)
 
+        fulgencio.scroll_down(group_name, 1, browser)
+
         text_box_element = browser.find_element_by_xpath(f"//*[@class='{TEXT_BOX_CLASS_NAME}']")
         text_box_element.send_keys(text)
+
+        time.sleep(2)
 
         button = browser.find_element_by_xpath(f"//*[@class='{BUTTON_CLASS_NAME}']")
         button.click()

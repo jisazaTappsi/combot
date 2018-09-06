@@ -163,12 +163,8 @@ def get_keywords():
 
 def get_groups_to_publish():
     return [('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
+            ('the one with the dummy', 'https://www.facebook.com/groups/908568295996143/'),
             ('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
-            ('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
-            ('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
-            ('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
-            ('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
-            ('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
-            ('the one with the dummy', 'https://www.facebook.com/groups/128842070497411/'),
+            ('the one with the dummy', 'https://www.facebook.com/groups/908568295996143/'),
             # TODO: add new groups here
             ]

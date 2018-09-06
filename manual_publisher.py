@@ -20,8 +20,7 @@ def get_random_text():
 
 
 def publish(browser):
-    with open('text_to_publish.txt', 'r') as f:
-
+    with open('text_to_publish.txt', 'r', encoding='utf-8') as f:
         text = f.read()
         publisher.publish_text(text, browser)
 
