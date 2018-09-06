@@ -1,37 +1,61 @@
 import time
+import pandas as pd
 from selenium.webdriver.common.keys import Keys
+from decouple import config
+from selenium.common.exceptions import WebDriverException
 
 import util
 import fulgencio
 
 
 INBOX_CLASS_NAME = '_42ft _4jy0 _4jy4 _517h _51sy'
+DEBUG = 1
 
 
 def get_contact_text():
-    return 'Vi que estás publicando una oferta laboral en redes sociales te invitamos a PeakU donde podrás encontrar los candidatos perfectos completamente grátis. https://peaku.co/seleccion_de_personal/seleccion_gratis'
+    with open('companies_message.txt', 'r', encoding='utf-8') as f:
+        return f.read()
+
+
+def send_message(results, text, browser):
+
+    for my_idx, (idx_df, _) in enumerate(results.iterrows()):
+
+        try:
+            if DEBUG:
+                if my_idx % 2:
+                    browser.get(config('test_user_1'))
+                else:
+                    browser.get(config('test_user_2'))
+            else:
+                browser.get(idx_df)
+        except WebDriverException:
+            print(f"couldn't read url: {my_idx}")
+            print('continuing...')
+            continue
+
+        inbox_button = browser.find_element_by_xpath(f"//*[@class='{INBOX_CLASS_NAME}']")
+        inbox_button.click()
+
+        time.sleep(2)
+
+        active_element = browser.switch_to.active_element
+        active_element.send_keys(text)
+        active_element.send_keys(Keys.RETURN)
+        time.sleep(2)
+
+
+def run():
+
+    browser = util.load_browser_and_login()
+
+    if DEBUG:
+        results = pd.DataFrame([1, 2, 3, 4])
+    else:
+        results = fulgencio.scrape_all(browser)
+
+    send_message(results, get_contact_text(), browser)
 
 
 if __name__ == '__main__':
-    browser = util.load_browser_and_login()
-    results = fulgencio.scrape_all(browser)
-
-    text = get_contact_text()
-
-    for idx, row in results.iterrows():
-
-        try:
-            browser.get(idx)
-            # TODO: test
-            #browser.get('https://www.facebook.com/santiagopsa?fb_dtsg_ag=AdysXi0iM7Yj_xqdJzmHDkdtpJBXEq_IO8ffxkmWoB3MAw%3AAdw1ZMxR3g084CpOJLY8CxrQ0R2cQO_-rCudF2wbWys6OQ')
-
-            inbox_button = browser.find_element_by_xpath(f"//*[@class='{INBOX_CLASS_NAME}']")
-            inbox_button.click()
-
-            time.sleep(2)
-
-            active_element = browser.switch_to.active_element
-            active_element.send_keys(text)
-            active_element.send_keys(Keys.RETURN)
-        except:
-            pass
+    run()
