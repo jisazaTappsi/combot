@@ -9,7 +9,7 @@ import fulgencio
 
 
 INBOX_CLASS_NAME = '_42ft _4jy0 _4jy4 _517h _51sy'
-DEBUG = 1
+DEBUG = 0
 
 
 def get_contact_text():
