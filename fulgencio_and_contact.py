@@ -29,20 +29,20 @@ def send_message(results, text, browser):
                     browser.get(config('test_user_2'))
             else:
                 browser.get(idx_df)
-        except WebDriverException:
+
+            inbox_button = browser.find_element_by_xpath(f"//*[@class='{INBOX_CLASS_NAME}']")
+            inbox_button.click()
+
+            time.sleep(2)
+
+            active_element = browser.switch_to.active_element
+            active_element.send_keys(text)
+            active_element.send_keys(Keys.RETURN)
+            time.sleep(2)
+        except WebDriverException:  # error accessing or interacting with elements.
             print(f"couldn't read url: {my_idx}")
             print('continuing...')
             continue
-
-        inbox_button = browser.find_element_by_xpath(f"//*[@class='{INBOX_CLASS_NAME}']")
-        inbox_button.click()
-
-        time.sleep(2)
-
-        active_element = browser.switch_to.active_element
-        active_element.send_keys(text)
-        active_element.send_keys(Keys.RETURN)
-        time.sleep(2)
 
 
 def run():
