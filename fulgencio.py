@@ -19,22 +19,26 @@ SCREEN_HEIGHT = 1080
 COORDINATES = (int(config('coordinate_x')), int(config('coordinate_y')))
 COLUMNS = ['post', 'word', 'group_name', 'group_url', 'count']
 MAIN_URL = config('main_url')
+PHONE_REGEX = '(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})'
+EMAIL_REGEX = '[^@\s]+@[^@\s]+\.[^@\s]+'
 
 
 def get_profile(split):
-    closest_math = [m.start() for m in re.finditer(MAIN_URL, split)]
-    if len(closest_math) > 0:
-        closest_math = closest_math[-1]
-        almost = split[closest_math:]
+    closest_match = [m.start() for m in re.finditer(MAIN_URL, split)]
+    if len(closest_match) > 0:
+        closest_match = closest_match[-1]
+        almost = split[closest_match:]
     else:
         return None
 
     pattern = f'{MAIN_URL}\S*'
-    return re.search(pattern, almost).group()
+    big_url = re.search(pattern, almost).group()
+
+    return big_url.split('?')[0]
 
 
 def filter_posts_with_email(df):
-    return df[df['post'].str.contains('@')]
+    return df[df['post'].apply(lambda p: len(re.findall(EMAIL_REGEX, p)) > 0)]
 
 
 def scrap_word(word, df, html, group_name, group_url):
@@ -66,15 +70,18 @@ def scrap_word(word, df, html, group_name, group_url):
                     df.loc[profile, 'post'] += post
             else:
 
-                row = pd.Series({'post': post,
-                                 'word': word,
-                                 'group_name': group_name,
-                                 'group_url': group_url,
-                                 'count': 1}, name=profile)
+                if len(re.findall(EMAIL_REGEX, post)) > 0:
+                    row = pd.Series({'post': post,
+                                     'email': re.findall(EMAIL_REGEX, post)[0],
+                                     'phone': get_phone(post),
+                                     'word': word,
+                                     'group_name': group_name,
+                                     'group_url': group_url,
+                                     'count': 1}, name=profile)
 
-                df = df.append(row)
+                    df = df.append(row)
 
-    return filter_posts_with_email(df)
+    return df
 
 
 def scroll_down(group_name, scroll_steps, browser):
@@ -98,6 +105,14 @@ def save_and_get_html(browser):
 def get_file(name):
     with open(name, 'rb', encoding='utf-8') as my_file:
         return my_file.readlines()
+
+
+def get_phone(string):
+    phones = re.findall(PHONE_REGEX, string)
+    if len(phones) > 0:
+        return phones[0]
+    else:
+        return ''
 
 
 def scrape_all(browser):
