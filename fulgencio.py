@@ -94,12 +94,8 @@ def scroll_down(group_name, scroll_steps, browser):
         time.sleep(0.3)
 
 
-def save_and_get_html(browser):
-    html = browser.page_source.lower()
-    with open('page.html', 'w', encoding='utf-8') as f:
-        f.write(html)
-
-    return html
+def get_html(browser):
+    return browser.page_source.lower()
 
 
 def get_file(name):
@@ -123,7 +119,7 @@ def scrape_all(browser):
         browser.get(group_url)
 
         scroll_down(group_name, scroll_steps, browser)
-        html = save_and_get_html(browser)
+        html = get_html(browser)
 
         for word in values.get_keywords():
             results = scrap_word(word=word.lower().replace('\n', ''),
