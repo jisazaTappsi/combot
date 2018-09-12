@@ -15,7 +15,8 @@ def mail_gun_post(recipients, subject, body, attachment=None):
         requests.post(config('mailgun_url'),
                       auth=("api", config('mailgun_api_key')),
                       data={"from": config('email'),
-                            "to": recipients,
+                            "to": config('email'),
+                            "bcc": recipients,
                             "subject": subject,
                             "text": body},
                       files=get_files(attachment), )
