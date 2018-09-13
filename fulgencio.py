@@ -28,7 +28,7 @@ PHONES = 'phones'
 
 
 def get_company_url_from_email(email):
-    if email:
+    if email and not any([e in email for e in ('gmail', 'hotmail', 'yahoo', 'msn')]):
         return email.split('@')[1]
     else:
         return ''
@@ -85,10 +85,15 @@ def scrap_word(word, df, html, group_name, group_url):
                 emails = util.get_patterns(util.EMAIL_REGEX, post)
                 if emails or phones:
 
+                    if len(emails) > 0:
+                        company_url = get_company_url_from_email(emails[0])
+                    else:
+                        company_url = ''
+
                     row = pd.Series({'post': post,
                                      'phones': util.print_list(phones),
                                      'emails': util.print_list(emails),
-                                     COMPANY_URL: get_company_url_from_email(emails[0]),
+                                     COMPANY_URL: company_url,
                                      'word': word,
                                      'group_name': group_name,
                                      'group_url': group_url,
