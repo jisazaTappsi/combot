@@ -55,7 +55,7 @@ def get_list_from_print(string):
     :param string:
     :return:
     """
-    if string:
+    if string and type(string) is str:
         return string.split(', ')
 
     return []
