@@ -8,8 +8,11 @@ import re
 import pandas as pd
 import os
 from decouple import config
+from selenium.common.exceptions import WebDriverException
+
 import values
 import util
+
 
 EMAIL_ID = 'email'
 PASS_ID = 'pass'
@@ -19,8 +22,16 @@ SCREEN_HEIGHT = 1080
 COORDINATES = (int(config('coordinate_x')), int(config('coordinate_y')))
 COLUMNS = ['post', 'word', 'group_name', 'group_url', 'count']
 MAIN_URL = config('main_url')
-PHONE_REGEX = '(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})'
-EMAIL_REGEX = '[^@\s]+@[^@\s]+\.[^@\s]+'
+COMPANY_URL = 'company_url'
+EMAILS = 'emails'
+PHONES = 'phones'
+
+
+def get_company_url_from_email(email):
+    if email:
+        return email.split('@')[1]
+    else:
+        return ''
 
 
 def get_profile(split):
@@ -38,7 +49,7 @@ def get_profile(split):
 
 
 def filter_posts_with_email(df):
-    return df[df['post'].apply(lambda p: len(re.findall(EMAIL_REGEX, p)) > 0)]
+    return df[df['post'].apply(lambda p: len(re.findall(util.EMAIL_REGEX, p)) > 0)]
 
 
 def scrap_word(word, df, html, group_name, group_url):
@@ -70,10 +81,14 @@ def scrap_word(word, df, html, group_name, group_url):
                     df.loc[profile, 'post'] += post
             else:
 
-                if len(re.findall(EMAIL_REGEX, post)) > 0:
+                phones = util.get_patterns(util.PHONE_REGEX, post)
+                emails = util.get_patterns(util.EMAIL_REGEX, post)
+                if emails or phones:
+
                     row = pd.Series({'post': post,
-                                     'email': re.findall(EMAIL_REGEX, post)[0],
-                                     'phone': get_phone(post),
+                                     'phones': util.print_list(phones),
+                                     'emails': util.print_list(emails),
+                                     COMPANY_URL: get_company_url_from_email(emails[0]),
                                      'word': word,
                                      'group_name': group_name,
                                      'group_url': group_url,
@@ -103,12 +118,30 @@ def get_file(name):
         return my_file.readlines()
 
 
-def get_phone(string):
-    phones = re.findall(PHONE_REGEX, string)
-    if len(phones) > 0:
-        return phones[0]
-    else:
-        return ''
+def scrape_company_url(results, browser):
+    """
+    The Angarita automaton
+    :return:
+    """
+    for profile, row in results.iterrows():
+        if row[COMPANY_URL]:
+            try:
+                browser.get('http://www.' + row[COMPANY_URL])
+                html = get_html(browser)
+
+                emails = util.get_list_from_print(results.loc[profile, EMAILS]) + util.get_patterns(util.EMAIL_REGEX, html)
+                emails = util.filter_emails(emails)
+
+                phones = util.get_list_from_print(results.loc[profile, PHONES]) + util.get_patterns(util.PHONE_REGEX, html)
+                phones = util.filter_phones(phones)
+
+                results.loc[profile, EMAILS] = util.print_list(emails)
+                results.loc[profile, PHONES] = util.print_list(phones)
+            except WebDriverException:
+                print(f'failed to load {row[COMPANY_URL]}')
+
+    # Save final result
+    results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
 
 
 def scrape_all(browser):
@@ -131,8 +164,12 @@ def scrape_all(browser):
         # Save partial result
         results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
 
+    scrape_company_url(results, browser)
+
     return results
 
 
 if __name__ == '__main__':
     scrape_all(util.load_browser_and_login())
+
+

@@ -1,6 +1,7 @@
 import pandas as pd
 import requests
 from decouple import config
+import util
 
 
 def get_files(attachment):
@@ -21,13 +22,14 @@ def mail_gun_post(recipients, subject, body, attachment=None):
                             "text": body},
                       files=get_files(attachment), )
     except ConnectionError:
-        pass
+        print('Error connecting to mail_gun...')
 
 
 def run():
 
     leads = pd.read_excel('leads.xlsx')
-    emails = list(leads['email'])
+    emails = [util.get_list_from_print(string_list) for string_list in list(leads['emails'])]
+    emails = util.flatten_list(emails)
 
     with open('email_body.txt', 'r', encoding='utf-8') as email_body:
         with open('email_subject.txt', 'r', encoding='utf-8') as email_subject:
