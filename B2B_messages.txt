@@ -1,0 +1,22 @@
+AO| {name} lalalala
+ALT|{name}  lalalala
+AC| {name} lalalala
+CT| {name} lalalala
+CC| {name} lalalala
+CO| {name} lalalala
+CF| {name} lalalala
+DG|{name}  lalalala
+DAA|{name}  lalalala
+D| {name} lalalala
+HT| {name} lalalala
+IT| {name}, vi que buscas desarrolladores de software, nosotros te podemos ayudar encontrando a los mejores!
+I| {name} lalalala
+IC| {name} lalalala
+LA| {name} lalalala
+MRT| {name} lalalala
+MS| {name} lalalala
+MPC| {name} lalalala
+POM| {name} lalalala
+RH| {name} lalalala
+SGAS| {name} lalalala
+V| {name} lalalala

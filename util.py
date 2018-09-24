@@ -16,6 +16,7 @@ COLUMNS = ['post', 'word', 'group_name', 'group_url', 'count']
 MAIN_URL = config('main_url')
 PHONE_REGEX = '(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})'
 EMAIL_REGEX = '[a-z\.0-9_-]+@[a-z\.0-9_-]+\.[^png|jpg|jpeg|tiff][a-z\.0-9_-]+'
+CHARS_TO_ERASE = ['-', ' ', '(', ')', '_', ',', '.']
 
 
 def enable_permissions():
@@ -73,16 +74,32 @@ def get_patterns(pattern, string):
         return []
 
 
+def trim_chars(phone):
+    for c in CHARS_TO_ERASE:
+        phone = phone.replace(c, '')
+    return phone
+
+
+# TODO: add rules for other countries
 def filter_phones(phones):
-    return list({p for p in phones if statistics.stdev([int(d) for d in p if d in '0123456789']) > 2 and is_colombia_phone(p)})
+    filtered_phones = list({p for p in phones if statistics.stdev([int(d) for d in p if d in '0123456789']) > 2 and
+                            is_colombia_phone(p)})
+
+    # Trim phones a little bit
+    return [trim_chars(p) for p in filtered_phones]
 
 
+# TODO: add rules for other countries
 def is_colombia_phone(phone):
-    digits = [int(d) for d in phone if d in '0123456789']
-    if len(digits) == 10:
-        return phone[0] == '3'
-    else:
-        return len(digits) == 7
+    return is_colombia_mobile(phone) or is_colombia_landline(phone)
+
+
+def is_colombia_mobile(phone):
+    return len(phone) == 10 and 300 <= int(phone[0:3]) <= 330
+
+
+def is_colombia_landline(phone):
+    return len(phone) == 7
 
 
 def filter_emails(emails):

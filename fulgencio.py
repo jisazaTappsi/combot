@@ -12,6 +12,7 @@ from selenium.common.exceptions import WebDriverException
 
 import values
 import util
+from cts import *
 
 
 EMAIL_ID = 'email'
@@ -20,11 +21,12 @@ LOGIN_BUTTON_ID = 'u_0_2'
 SCROLL_SCREENS = 1
 SCREEN_HEIGHT = 1080
 COORDINATES = (int(config('coordinate_x')), int(config('coordinate_y')))
-COLUMNS = ['post', 'word', 'group_name', 'group_url', 'count']
+COLUMNS = ['name', 'post', 'word', 'group_name', 'group_url', 'count']
 MAIN_URL = config('main_url')
 COMPANY_URL = 'company_url'
 EMAILS = 'emails'
 PHONES = 'phones'
+NAME_CLASS_TAG = '_2nlw _2nlv'
 
 
 def get_company_url_from_email(email):
@@ -52,7 +54,7 @@ def filter_posts_with_email(df):
     return df[df['post'].apply(lambda p: len(re.findall(util.EMAIL_REGEX, p)) > 0)]
 
 
-def scrap_word(word, df, html, group_name, group_url):
+def scrap_word(word, df, html, group_name, group_url, browser):
     """
     :param word: string
     :param df: pandas Dataframe
@@ -90,14 +92,25 @@ def scrap_word(word, df, html, group_name, group_url):
                     else:
                         company_url = ''
 
-                    row = pd.Series({'post': post,
+                    try:
+                        browser.get(profile)
+                        name = browser.find_element_by_xpath(f"//*[@class='{NAME_CLASS_TAG}']")
+                        name_text = name.text
+                    except WebDriverException:
+                        print(f'failed to load {profile}, continuing...')
+                        name_text = ''
+
+                    # By default will assign It to all positions
+                    row = pd.Series({'name': name_text,
+                                     'post': post,
                                      'phones': util.print_list(phones),
                                      'emails': util.print_list(emails),
                                      COMPANY_URL: company_url,
                                      'word': word,
                                      'group_name': group_name,
                                      'group_url': group_url,
-                                     'count': 1}, name=profile)
+                                     'count': 1,
+                                     WORK_AREA_CODE: 'IT'}, name=profile)
 
                     df = df.append(row)
 
@@ -125,7 +138,7 @@ def get_file(name):
 
 def scrape_company_url(results, browser):
     """
-    The Angarita automaton
+    The Angarita automation
     :return:
     """
     for profile, row in results.iterrows():
@@ -143,7 +156,7 @@ def scrape_company_url(results, browser):
                 results.loc[profile, EMAILS] = util.print_list(emails)
                 results.loc[profile, PHONES] = util.print_list(phones)
             except WebDriverException:
-                print(f'failed to load {row[COMPANY_URL]}')
+                print(f'failed to load {row[COMPANY_URL]}, continuing...')
 
     # Save final result
     results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
@@ -164,7 +177,8 @@ def scrape_all(browser):
                                  df=results,
                                  html=html,
                                  group_url=group_url,
-                                 group_name=group_name)
+                                 group_name=group_name,
+                                 browser=browser)
 
         # Save partial result
         results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
