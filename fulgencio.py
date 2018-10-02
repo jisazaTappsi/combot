@@ -180,7 +180,8 @@ def scrape_all(browser):
                                  group_name=group_name,
                                  browser=browser)
 
-        # Save partial result
+        # Escape odd chars and Save partial result
+        results = results.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
         results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
 
     scrape_company_url(results, browser)
