@@ -121,9 +121,6 @@ def scroll_down(group_name, scroll_steps, browser):
     for i in range(scroll_steps):
         height = SCREEN_HEIGHT * SCROLL_SCREENS
         browser.execute_script(f'window.scrollTo({i * height}, {(i + 1) * height})')
-
-        # TODO: make this work
-        browser.save_screenshot(os.path.join('images', f'{group_name}_{i}.png'))
         time.sleep(0.3)
 
 
@@ -183,6 +180,7 @@ def scrape_all(browser):
         # Escape odd chars and Save partial result
         results = results.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
         results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
+        print(f'saved results for: {group_name}')
 
     scrape_company_url(results, browser)
 
