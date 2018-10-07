@@ -80,11 +80,15 @@ def scrap_word(word, df, html, group_name, group_url, browser):
                 if post == df.loc[profile, 'post']:
                     df.loc[profile, 'count'] += 1
                 else:
-                    df.loc[profile, 'post'] += post
+                    try:
+                        df.loc[profile, 'post'] += post
+                    except MemoryError:
+                        pass
             else:
 
                 phones = util.get_patterns(util.PHONE_REGEX, post)
                 emails = util.get_patterns(util.EMAIL_REGEX, post)
+
                 if emails or phones:
 
                     if len(emails) > 0:
@@ -92,13 +96,17 @@ def scrap_word(word, df, html, group_name, group_url, browser):
                     else:
                         company_url = ''
 
+                    """
                     try:
+                        print(f'browser.get({profile}), ...')
                         browser.get(profile)
                         name = browser.find_element_by_xpath(f"//*[@class='{NAME_CLASS_TAG}']")
                         name_text = name.text
                     except WebDriverException:
                         print(f'failed to load {profile}, continuing...')
                         name_text = ''
+                    """
+                    name_text = ''
 
                     # By default will assign It to all positions
                     row = pd.Series({'name': name_text,
@@ -141,6 +149,7 @@ def scrape_company_url(results, browser):
     for profile, row in results.iterrows():
         if row[COMPANY_URL]:
             try:
+                print(f'browser.get({row[COMPANY_URL]}), ...')
                 browser.get('http://www.' + row[COMPANY_URL])
                 html = get_html(browser)
 
@@ -164,6 +173,7 @@ def scrape_all(browser):
 
     for idx, (group_name, group_url, scroll_steps) in enumerate(values.get_groups()):
 
+        print(f'browser.get({group_name}), ...')
         browser.get(group_url)
 
         scroll_down(group_name, scroll_steps, browser)
@@ -176,6 +186,7 @@ def scrape_all(browser):
                                  group_url=group_url,
                                  group_name=group_name,
                                  browser=browser)
+            print(f'scraped word: {word}, done')
 
         # Escape odd chars and Save partial result
         results = results.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
