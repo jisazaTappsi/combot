@@ -3,15 +3,14 @@ Gets lots of job vacancies!
 Writes them in leads.xlsx
 """
 
-import time
 import re
+import time
 import pandas as pd
-import os
 from decouple import config
 from selenium.common.exceptions import WebDriverException
 
-import values
 import util
+import values
 from cts import *
 
 
@@ -52,6 +51,18 @@ def get_profile(split):
 
 def filter_posts_with_email(df):
     return df[df['post'].apply(lambda p: len(re.findall(util.EMAIL_REGEX, p)) > 0)]
+
+
+def scrape_name(browser, profile):
+
+    try:
+        print(f'browser.get({profile}), ...')
+        browser.get(profile)
+        name = browser.find_element_by_xpath(f"//*[@class='{NAME_CLASS_TAG}']")
+        return name.text
+    except WebDriverException:
+        print(f'failed to load {profile}, continuing...')
+        return ''
 
 
 def scrap_word(word, df, html, group_name, group_url, browser):
@@ -96,16 +107,7 @@ def scrap_word(word, df, html, group_name, group_url, browser):
                     else:
                         company_url = ''
 
-                    """
-                    try:
-                        print(f'browser.get({profile}), ...')
-                        browser.get(profile)
-                        name = browser.find_element_by_xpath(f"//*[@class='{NAME_CLASS_TAG}']")
-                        name_text = name.text
-                    except WebDriverException:
-                        print(f'failed to load {profile}, continuing...')
-                        name_text = ''
-                    """
+                    #name_text = scrape_name(browser, profile)
                     name_text = ''
 
                     # By default will assign It to all positions
@@ -125,7 +127,7 @@ def scrap_word(word, df, html, group_name, group_url, browser):
     return df
 
 
-def scroll_down(group_name, scroll_steps, browser):
+def scroll_down(scroll_steps, browser):
     for i in range(scroll_steps):
         height = SCREEN_HEIGHT * SCROLL_SCREENS
         browser.execute_script(f'window.scrollTo({i * height}, {(i + 1) * height})')
@@ -176,7 +178,7 @@ def scrape_all(browser):
         print(f'browser.get({group_name}), ...')
         browser.get(group_url)
 
-        scroll_down(group_name, scroll_steps, browser)
+        scroll_down(scroll_steps, browser)
         html = get_html(browser)
 
         for word in values.get_keywords():
@@ -200,5 +202,3 @@ def scrape_all(browser):
 
 if __name__ == '__main__':
     scrape_all(util.load_browser_and_login())
-
-

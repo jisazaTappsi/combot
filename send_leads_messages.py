@@ -1,15 +1,14 @@
 import requests
 import urllib.parse
 import pandas as pd
-from cts import *
 import util
 
 DEBUG = True
 
 
-def get_messages_dict():
-    with open('B2B_messages.txt') as f:
-        return {line.split('|')[0]: line.split('|')[1] for line in f.readlines()}
+def get_b2b_message():
+    with open('B2B_message.txt') as f:
+        return f.read()
 
 
 # TODO: add more countries
@@ -35,8 +34,7 @@ def get_first_email(emails):
 
 def read_excel_leads():
     df = pd.read_excel('leads.xlsx')
-    messages_dict = get_messages_dict()
-    df['message'] = df[WORK_AREA_CODE].apply(lambda x: messages_dict[x])
+    df['message'] = get_b2b_message()
     df['phone'] = df['phones'].apply(get_mobile_phone)
     # Removes lines with no phone
     df.dropna(subset=['phone'], axis=0, inplace=True)
