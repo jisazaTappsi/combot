@@ -65,7 +65,7 @@ def scrape_name(browser, profile):
         return ''
 
 
-def scrap_word(word, df, html, group_name, group_url, browser):
+def scrap_word(word, df, html, group_name, group_url):
     """
     :param word: string
     :param df: pandas Dataframe
@@ -87,14 +87,12 @@ def scrap_word(word, df, html, group_name, group_url, browser):
         profile = get_profile(split)
         if profile and MAIN_URL in profile:
             post = posts[idx].replace('>', '').replace('<', '')
+            post = post[:min(2000, len(post))]
             if profile in list(df.index.values):
                 if post == df.loc[profile, 'post']:
                     df.loc[profile, 'count'] += 1
                 else:
-                    try:
-                        df.loc[profile, 'post'] += post
-                    except MemoryError:
-                        pass
+                    df.loc[profile, 'post'] += post
             else:
 
                 phones = util.get_patterns(util.PHONE_REGEX, post)
@@ -181,19 +179,21 @@ def scrape_all(browser):
         scroll_down(scroll_steps, browser)
         html = get_html(browser)
 
-        for word in values.get_keywords():
-            results = scrap_word(word=word.lower().replace('\n', ''),
-                                 df=results,
-                                 html=html,
-                                 group_url=group_url,
-                                 group_name=group_name,
-                                 browser=browser)
-            print(f'scraped word: {word}, done')
+        try:
+            for word in values.get_keywords():
+                results = scrap_word(word=word.lower().replace('\n', ''),
+                                     df=results,
+                                     html=html,
+                                     group_url=group_url,
+                                     group_name=group_name)
+                print(f'scraped word: {word}, done')
 
-        # Escape odd chars and Save partial result
-        results = results.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
-        results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
-        print(f'saved results for: {group_name}')
+            # Escape odd chars and Save partial result
+            results = results.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
+            results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
+            print(f'saved results for: {group_name}')
+        except MemoryError:
+            pass
 
     scrape_company_url(results, browser)
 
