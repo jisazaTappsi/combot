@@ -59,6 +59,8 @@ def get_list_from_print(string):
     if string and type(string) is str:
         return string.split(', ')
 
+    if type(string) is int:
+        return [str(string)]
     return []
 
 

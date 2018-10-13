@@ -47,7 +47,7 @@ def read_excel_leads():
 def run():
 
     df = read_excel_leads()
-
+    print(df)
     root_url = 'http://127.0.0.1:8000' if DEBUG else 'https://peaku.co/'
 
     # TODO: make this a post and use the restfull api
