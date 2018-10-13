@@ -3,7 +3,7 @@ import urllib.parse
 import pandas as pd
 import util
 
-DEBUG = True
+DEBUG = False
 
 
 def get_b2b_message():
