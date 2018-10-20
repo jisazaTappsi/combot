@@ -204,7 +204,7 @@ def scrape_all(browser):
     print(r.status_code)
 
     if USE_ALL_LEADS:
-        results = results[results.index.values not in r.json()]
+        results = results[results.index not in r.json()]
 
     return results
 
