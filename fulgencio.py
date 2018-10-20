@@ -204,10 +204,7 @@ def scrape_all(browser):
     print(r.status_code)
 
     if USE_ALL_LEADS:
-        lead_list = list(results['facebook_url'])
-
-
-        results = results[]
+        results = results[results.index.values not in r.json()]
 
     return results
 
