@@ -8,16 +8,16 @@ import time
 import pandas as pd
 from decouple import config
 from selenium.common.exceptions import WebDriverException
+import requests
+import urllib.parse
 
 import util
 import values
 from cts import *
 
-
 EMAIL_ID = 'email'
 PASS_ID = 'pass'
 LOGIN_BUTTON_ID = 'u_0_2'
-SCROLL_SCREENS = 1
 SCREEN_HEIGHT = 1080
 COORDINATES = (int(config('coordinate_x')), int(config('coordinate_y')))
 COLUMNS = ['name', 'post', 'word', 'group_name', 'group_url', 'count']
@@ -127,8 +127,7 @@ def scrap_word(word, df, html, group_name, group_url):
 
 def scroll_down(scroll_steps, browser):
     for i in range(scroll_steps):
-        height = SCREEN_HEIGHT * SCROLL_SCREENS
-        browser.execute_script(f'window.scrollTo({i * height}, {(i + 1) * height})')
+        browser.execute_script(f'window.scrollTo({i * SCREEN_HEIGHT}, {(i + 1) * SCREEN_HEIGHT})')
         time.sleep(0.3)
 
 
@@ -196,6 +195,19 @@ def scrape_all(browser):
             pass
 
     scrape_company_url(results, browser)
+
+    root_url = 'http://127.0.0.1:8000' if DEBUG else 'https://peaku.co/'
+    # TODO: make this a post and use the restfull api
+    r = requests.get(urllib.parse.urljoin(root_url, 'api/add_messages'),  # 'login_user'),
+                     {'names': results['name'], 'facebook_urls': results['facebook_url'],
+                      'phones': results['phone'], 'emails': results['email']})
+    print(r.status_code)
+
+    if USE_ALL_LEADS:
+        lead_list = list(results['facebook_url'])
+
+
+        results = results[]
 
     return results
 

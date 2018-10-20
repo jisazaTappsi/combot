@@ -2,8 +2,7 @@ import requests
 import urllib.parse
 import pandas as pd
 import util
-
-DEBUG = False
+from cts import *
 
 
 def get_b2b_message():
