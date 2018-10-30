@@ -2,6 +2,7 @@ import requests
 import urllib.parse
 import pandas as pd
 import util
+from decouple import config
 from cts import *
 
 
@@ -48,17 +49,11 @@ def run():
     df = read_excel_leads()
     print(df)
     root_url = 'http://127.0.0.1:8000' if DEBUG else 'https://peaku.co/'
-
-    """
-    # TODO: make this a post and use the restfull api
-    r = requests.get(urllib.parse.urljoin(root_url, 'api/add_messages'),  # 'login_user'),
-                     {'names': df['name'], 'messages': df['message'],
-                      'phones': df['phone'], 'emails': df['email'],
-                      'facebook_urls': df.index.values})
+    names = [n.replace(config('main_url'), '') for n in df.index.values]
+    r = requests.post(urllib.parse.urljoin(root_url, 'api/save_leads'),  # 'login_user'),
+                      {'names': names, 'facebook_urls': df.index.values,
+                       'phones': df['phone'], 'emails': df['email']})
     print(r.status_code, r.reason)
-
-    # TODO: https://stackoverflow.com/questions/10134690/using-requests-python-library-to-connect-django-app-failed-on-authentication
-    """
 
     r = requests.post(urllib.parse.urljoin(root_url, 'api/add_messages'),
                       data={'names': df['name'], 'messages': df['message'],

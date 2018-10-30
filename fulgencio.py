@@ -197,9 +197,8 @@ def scrape_all(browser):
     scrape_company_url(results, browser)
 
     root_url = 'http://127.0.0.1:8000' if DEBUG else 'https://peaku.co/'
-    # TODO: make this a post and use the restfull api
-    r = requests.get(urllib.parse.urljoin(root_url, 'api/add_messages'),  # 'login_user'),
-                     {'names': results['name'], 'facebook_urls': results['facebook_url'],
+    r = requests.post(urllib.parse.urljoin(root_url, 'api/save_leads'),  # 'login_user'),
+                     {'names': results['name'], 'facebook_urls': results.index.values,
                       'phones': results['phone'], 'emails': results['email']})
     print(r.status_code)
 
