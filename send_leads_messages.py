@@ -49,23 +49,22 @@ def run():
     print(df)
     root_url = 'http://127.0.0.1:8000' if DEBUG else 'https://peaku.co/'
 
+    """
     # TODO: make this a post and use the restfull api
     r = requests.get(urllib.parse.urljoin(root_url, 'api/add_messages'),  # 'login_user'),
                      {'names': df['name'], 'messages': df['message'],
-                      'phones': df['phone'], 'emails': df['email']})
+                      'phones': df['phone'], 'emails': df['email'],
+                      'facebook_urls': df.index.values})
     print(r.status_code, r.reason)
 
     # TODO: https://stackoverflow.com/questions/10134690/using-requests-python-library-to-connect-django-app-failed-on-authentication
     """
-    'username': 'my_account@peaku.co', 'password': 'my_happy_pass',
-    cookies = dict(sessionid=r.cookies.get('sessionid'))
 
     r = requests.post(urllib.parse.urljoin(root_url, 'api/add_messages'),
                       data={'names': df['name'], 'messages': df['message'],
-                            'phones': df['phone'], 'emails': df['email'],},
-                      cookies=cookies)
+                            'phones': df['phone'], 'emails': df['email'],
+                            'facebook_urls': df.index.values})
     print(r.status_code, r.reason)
-    """
 
 
 if __name__ == '__main__':

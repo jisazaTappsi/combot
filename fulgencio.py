@@ -203,7 +203,7 @@ def scrape_all(browser):
                       'phones': results['phone'], 'emails': results['email']})
     print(r.status_code)
 
-    if USE_ALL_LEADS:
+    if FILTER_LEADS:
         results = results[results.index not in r.json()]
 
     return results
