@@ -2,6 +2,7 @@ import random
 
 import util
 import publisher
+from decouple import config
 
 
 def get_dummy_group():
@@ -26,4 +27,4 @@ def publish(browser):
 
 
 if __name__ == '__main__':
-    publish(util.load_browser_and_login())
+    publish(util.load_browser_and_login(config('fulgencio_url')))

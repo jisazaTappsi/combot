@@ -8,7 +8,7 @@ from queue import Queue
 
 import util
 import publisher
-
+from decouple import config
 
 DEBUG = 0
 
@@ -35,7 +35,7 @@ def run():
 
     posts_queue = Queue()
     [posts_queue.put(m) for m in get_posts()]
-    browser = util.load_browser_and_login()
+    browser = util.load_browser_and_login(config('fulgencio_url'))
 
     while not posts_queue.empty():
         publish_post(posts_queue.get(), browser)

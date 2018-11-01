@@ -5,6 +5,8 @@ import platform
 import pyautogui
 import re
 import statistics
+from cts import *
+import unicodedata
 
 EMAIL_ID = 'email'
 PASS_ID = 'pass'
@@ -13,7 +15,6 @@ SCROLL_SCREENS = 1
 SCREEN_HEIGHT = 1080
 COORDINATES = (int(config('coordinate_x')), int(config('coordinate_y')))
 COLUMNS = ['post', 'word', 'group_name', 'group_url', 'count']
-MAIN_URL = config('main_url')
 PHONE_REGEX = '(\d{3}[-\.\s]??\d{3}[-\.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-\.\s]??\d{4}|\d{3}[-\.\s]??\d{4})'
 EMAIL_REGEX = '[a-z\.0-9_-]+@[a-z\.0-9_-]+\.[^png|jpg|jpeg|tiff][a-z\.0-9_-]+'
 CHARS_TO_ERASE = ['-', ' ', '(', ')', '_', ',', '.']
@@ -24,14 +25,14 @@ def enable_permissions():
     pyautogui.click(interval=0.1)
 
 
-def load_browser_and_login():
+def load_browser_and_login(main_url):
 
     if platform.system() == 'Windows':
         browser = Chrome(executable_path='chrome_driver_win.exe')
     else:
         browser = Chrome()
 
-    browser.get(MAIN_URL)
+    browser.get(main_url)
 
     email_element = browser.find_element_by_id(EMAIL_ID)
     email_element.send_keys(config('email'))
@@ -106,6 +107,27 @@ def is_colombia_landline(phone):
 
 def filter_emails(emails):
     return list({e for e in emails })
+
+
+def get_root_url():
+    return 'http://127.0.0.1:8000' if DEBUG else 'https://peaku.co/'
+
+
+def remove_accents_in_string(element):
+    """
+    Removes accents and non-ascii chars
+    Args:
+        element: anything.
+    Returns: Cleans accents only for strings.
+    """
+    if isinstance(element, str):
+        text = ''.join(c for c in unicodedata.normalize('NFD', element) if unicodedata.category(c) != 'Mn')
+        # removes non ascii chars
+        text = ''.join([i if ord(i) < 128 else '' for i in text])
+
+        return text.replace('\x00', '')  # remove NULL char
+    else:
+        return element
 
 
 if __name__ == '__main__':

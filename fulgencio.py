@@ -21,7 +21,7 @@ LOGIN_BUTTON_ID = 'u_0_2'
 SCREEN_HEIGHT = 1080
 COORDINATES = (int(config('coordinate_x')), int(config('coordinate_y')))
 COLUMNS = ['name', 'post', 'word', 'group_name', 'group_url', 'count']
-MAIN_URL = config('main_url')
+FULGENCIO_URL = config('fulgencio_url')
 COMPANY_URL = 'company_url'
 EMAILS = 'emails'
 PHONES = 'phones'
@@ -36,14 +36,14 @@ def get_company_url_from_email(email):
 
 
 def get_profile(split):
-    closest_match = [m.start() for m in re.finditer(MAIN_URL, split)]
+    closest_match = [m.start() for m in re.finditer(FULGENCIO_URL, split)]
     if len(closest_match) > 0:
         closest_match = closest_match[-1]
         almost = split[closest_match:]
     else:
         return None
 
-    pattern = f'{MAIN_URL}\S*'
+    pattern = f'{FULGENCIO_URL}\S*'
     big_url = re.search(pattern, almost).group()
 
     return big_url.split('?')[0]
@@ -85,7 +85,7 @@ def scrap_word(word, df, html, group_name, group_url):
     posts = re.findall(post_pattern, html)
     for idx, split in enumerate(splits):
         profile = get_profile(split)
-        if profile and MAIN_URL in profile:
+        if profile and FULGENCIO_URL in profile:
             post = posts[idx].replace('>', '').replace('<', '')
             post = post[:min(2000, len(post))]
             if profile in list(df.index.values):
@@ -196,9 +196,8 @@ def scrape_all(browser):
 
     scrape_company_url(results, browser)
 
-    root_url = 'http://127.0.0.1:8000' if DEBUG else 'https://peaku.co/'
     # TODO: make this a post and use the restfull api
-    r = requests.get(urllib.parse.urljoin(root_url, 'api/add_messages'),  # 'login_user'),
+    r = requests.get(urllib.parse.urljoin(util.get_root_url(), 'api/add_messages'),  # 'login_user'),
                      {'names': results['name'], 'facebook_urls': results['facebook_url'],
                       'phones': results['phone'], 'emails': results['email']})
     print(r.status_code)
@@ -210,4 +209,4 @@ def scrape_all(browser):
 
 
 if __name__ == '__main__':
-    scrape_all(util.load_browser_and_login())
+    scrape_all(util.load_browser_and_login(config('fulgencio_url')))

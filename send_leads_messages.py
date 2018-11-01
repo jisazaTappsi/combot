@@ -47,10 +47,9 @@ def run():
 
     df = read_excel_leads()
     print(df)
-    root_url = 'http://127.0.0.1:8000' if DEBUG else 'https://peaku.co/'
 
     # TODO: make this a post and use the restfull api
-    r = requests.get(urllib.parse.urljoin(root_url, 'api/add_messages'),  # 'login_user'),
+    r = requests.get(urllib.parse.urljoin(util.get_root_url(), 'api/add_messages'),  # 'login_user'),
                      {'names': df['name'], 'messages': df['message'],
                       'phones': df['phone'], 'emails': df['email']})
     print(r.status_code, r.reason)

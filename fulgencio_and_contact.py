@@ -47,7 +47,7 @@ def send_message(results, text, browser):
 
 def run():
 
-    browser = util.load_browser_and_login()
+    browser = util.load_browser_and_login(config('fulgencio_url'))
 
     if DEBUG:
         results = pd.DataFrame([1, 2, 3, 4])
