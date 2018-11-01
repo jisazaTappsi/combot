@@ -1,11 +1,10 @@
-
 import platform
 from decouple import config
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import requests
-
+import json
 import util
 
 EMAIL_ID = 'txEmail'
@@ -71,15 +70,19 @@ def get_city_id(cities_tuple, city_field):
 
 if __name__ == '__main__':
 
-    cities = requests.get(util.get_root_url(), 'api/v1/get_cities')
-    cities_tuple = [(city['pk'], util.remove_accents_in_string(city['fields']['name']).lower().strip()) for city in cities.json()]
+    cities = requests.get(util.get_root_url() + '/api/v1/get_cities')
+    cities = json.loads(cities.json())
+    cities_tuple = [(city['pk'], util.remove_accents_in_string(city['fields']['name']).lower().strip()) for city in cities]
 
     browser = load_browser_and_login(config('bolsa1_url'))
 
     post_list_html = BeautifulSoup(browser.page_source, 'lxml')
 
+    links_with_text = [a['href'] for a in soup.find_all('a', href=True) if a.text]
+
     for subscribed_url in post_list_html.find_all('li', class_='inscritos'):
-        subscribed_url = subscribed_url.a['href']
+        # subscribed_url = subscribed_url.a['href']
+        subscribed_url.find()
         browser.get(subscribed_url)
 
         profile_list_html = BeautifulSoup(browser.page_source, 'lxml')
@@ -106,37 +109,6 @@ if __name__ == '__main__':
 
             user['salary'] = int(salary_string.split('$')[1].strip().replace(',', '').split('.')[0])
 
+            browser.find_elements_by_class_name("icon pdf_hdv")[0].click()
 
-
-
-
-
-
-
-
-
-
-# Brainstorming:
-
-# 1. Pimp my CV
-# 2. trivias
-# hacer prueba con correos para ver respuesta:
-    # a. formulario de CV-->google forms
-    # b. formulario de trivia-->google forms
-
-# 3. Hacer robot de Computrabajo y otras Bolsas --> hagale ya
-
-# 4. Fulgencio para candidatos:
-# + grupos
-# + keywords
-# Guion generico y ejecutar fulgencio mixto -> que pasa?
-# partir el problema en 2
-
-# 5. compartir --> personas pueden compartir ofertas
-
-# 6. unsubscribe
-
-# 7. Mejorar UI de tests
-
-# 8. Entrar a Chile: David Escobar
 
