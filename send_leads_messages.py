@@ -2,6 +2,7 @@ import requests
 import urllib.parse
 import pandas as pd
 import util
+from decouple import config
 from cts import *
 
 
@@ -33,7 +34,7 @@ def get_first_email(emails):
 
 def read_excel_leads():
     df = pd.read_excel('leads.xlsx')
-    df['message'] = get_b2b_message()
+    df['message'] = get_b2b_message().encode('ISO-8859-1')
     df['phone'] = df['phones'].apply(get_mobile_phone)
     # Removes lines with no phone
     df.dropna(subset=['phone'], axis=0, inplace=True)
@@ -48,23 +49,17 @@ def run():
     df = read_excel_leads()
     print(df)
 
-    # TODO: make this a post and use the restfull api
-    r = requests.get(urllib.parse.urljoin(util.get_root_url(), 'api/add_messages'),  # 'login_user'),
-                     {'names': df['name'], 'messages': df['message'],
-                      'phones': df['phone'], 'emails': df['email']})
+    names = [n.replace(config('main_url'), '') for n in df.index.values]
+    r = requests.post(urllib.parse.urljoin(util.get_root_url(), 'api/save_leads'),  # 'login_user'),
+                      {'names': names, 'facebook_urls': df.index.values,
+                       'phones': df['phone'], 'emails': df['email']})
     print(r.status_code, r.reason)
 
-    # TODO: https://stackoverflow.com/questions/10134690/using-requests-python-library-to-connect-django-app-failed-on-authentication
-    """
-    'username': 'my_account@peaku.co', 'password': 'my_happy_pass',
-    cookies = dict(sessionid=r.cookies.get('sessionid'))
-
-    r = requests.post(urllib.parse.urljoin(root_url, 'api/add_messages'),
+    r = requests.post(urllib.parse.urljoin(util.get_root_url(), 'api/add_messages'),
                       data={'names': df['name'], 'messages': df['message'],
-                            'phones': df['phone'], 'emails': df['email'],},
-                      cookies=cookies)
+                            'phones': df['phone'], 'emails': df['email'],
+                            'facebook_urls': df.index.values})
     print(r.status_code, r.reason)
-    """
 
 
 if __name__ == '__main__':

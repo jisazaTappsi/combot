@@ -196,13 +196,12 @@ def scrape_all(browser):
 
     scrape_company_url(results, browser)
 
-    # TODO: make this a post and use the restfull api
-    r = requests.get(urllib.parse.urljoin(util.get_root_url(), 'api/add_messages'),  # 'login_user'),
-                     {'names': results['name'], 'facebook_urls': results['facebook_url'],
+    r = requests.post(urllib.parse.urljoin(util.get_root_url(), 'api/save_leads'),  # 'login_user'),
+                     {'names': results['name'], 'facebook_urls': results.index.values,
                       'phones': results['phone'], 'emails': results['email']})
     print(r.status_code)
 
-    if USE_ALL_LEADS:
+    if FILTER_LEADS:
         results = results[results.index not in r.json()]
 
     return results
