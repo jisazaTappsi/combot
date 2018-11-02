@@ -1,12 +1,11 @@
 
-import json
 import platform
 from decouple import config
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import requests
-
+import json
 import util
 
 EMAIL_ID = 'txEmail'
@@ -74,7 +73,6 @@ def get_city_id(cities_tuple, city_field):
             return id
 
 
-
 def get_campaign_id(campaign_tuple, campaign_name):
 
     campaign_name = util.remove_accents_in_string(campaign_name.lower().strip())
@@ -91,6 +89,8 @@ if __name__ == '__main__':
     response = requests.get(util.get_root_url() + '/api/v1/get_cities')
     cities = json.loads(response.json())
     cities_tuple = [(city['pk'], util.remove_accents_in_string(city['fields']['name']).lower().strip()) for city in cities]
+
+    #browser.find_elements_by_class_name("icon pdf_hdv")[0].click()
 
     response = requests.get(util.get_root_url() + '/api/v1/get_campaigns')
     campaigns = json.loads(response.json())
