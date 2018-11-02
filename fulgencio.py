@@ -160,6 +160,8 @@ def scrape_company_url(results, browser):
                 print(f'failed to load {row[COMPANY_URL]}, continuing...')
 
     # Save final result
+    # Escape odd chars and Save partial result
+    results = results.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
     results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
 
 
