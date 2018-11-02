@@ -30,23 +30,13 @@ def load_browser_and_login(main_url):
 
     pass_element.send_keys(Keys.ENTER)
 
-    """
-    enable_permissions()
-    """
-
     return browser
 
 
 """
     optional params:
-        email = str
-        name = str
-        phone = str
         work_area_id = int
-        city_id = int
-        google_token = str
-        politics = str
-        campaign_id = int
+        phone2
 
     optional FILES:
         curriculum_url
@@ -121,16 +111,23 @@ if __name__ == '__main__':
                     print(url)
                     browser.get(url)
 
-                    html = util.get_html(browser)
-                    with open('html_scrapper_bolsa1', 'w', encoding='latin-1') as f:
-                        f.write(html)
+                    #html = util.get_html(browser)
+                    #with open('html_scrapper_bolsa1', 'w', encoding='latin-1') as f:
+                    #    f.write(html)
 
                     profile_html = BeautifulSoup(browser.page_source, 'lxml')
 
                     user = dict()
                     user['campaign_id'] = campaign_id
                     user['name'] = profile_html.find('p', class_='').text.replace(' Hoja de vida de  ', '')
+
                     user['email'] = profile_html.find('span', class_='icon email').parent.text
+
+                    #emails = [e.parent.text for e in profile_html.findall('span', class_='icon email')]
+                    #emails = [t for t in emails if config('bolsa1_name') not in t]
+                    #if len(emails) > 0:
+                    #    user['email'] = emails[0]
+
                     phones_obj = profile_html.find_all('span', class_='fl fw_n mt3')
 
                     if phones_obj[0]:
