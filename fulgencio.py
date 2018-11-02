@@ -131,10 +131,6 @@ def scroll_down(scroll_steps, browser):
         time.sleep(0.3)
 
 
-def get_html(browser):
-    return browser.page_source.lower()
-
-
 def get_file(name):
     with open(name, 'rb', encoding='utf-8') as my_file:
         return my_file.readlines()
@@ -150,7 +146,7 @@ def scrape_company_url(results, browser):
             try:
                 print(f'browser.get({row[COMPANY_URL]}), ...')
                 browser.get('http://www.' + row[COMPANY_URL])
-                html = get_html(browser)
+                html = util.get_html(browser)
 
                 emails = util.get_list_from_print(results.loc[profile, EMAILS]) + util.get_patterns(util.EMAIL_REGEX, html)
                 emails = util.filter_emails(emails)
@@ -176,7 +172,7 @@ def scrape_all(browser):
         browser.get(group_url)
 
         scroll_down(scroll_steps, browser)
-        html = get_html(browser)
+        html = util.get_html(browser)
 
         try:
             for word in values.get_keywords():

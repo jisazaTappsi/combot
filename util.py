@@ -130,6 +130,10 @@ def remove_accents_in_string(element):
         return element
 
 
+def get_html(browser):
+    return browser.page_source.lower()
+
+
 if __name__ == '__main__':
     emails = get_list_from_print('') + \
              get_patterns(EMAIL_REGEX, ' sadasd many@mail.co shit in between another@one.com')
