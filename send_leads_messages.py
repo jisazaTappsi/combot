@@ -36,6 +36,7 @@ def read_excel_leads():
     df = pd.read_excel('leads.xlsx')
     df['message'] = get_b2b_message().encode('ISO-8859-1')
     df['phone'] = df['phones'].apply(get_mobile_phone)
+
     # Removes lines with no phone
     df.dropna(subset=['phone'], axis=0, inplace=True)
 

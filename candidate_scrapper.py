@@ -47,10 +47,11 @@ def load_browser_and_login(main_url):
 
 
 """
-    optional params:
+# TODO: add missing params
+    optional params to API:
         phone2
 
-    optional FILES:
+    optional FILES to combot:
         photo_url
         brochure_url
 """
