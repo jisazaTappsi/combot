@@ -13,6 +13,7 @@ import os
 import re
 import time
 import pandas as pd
+from selenium.common.exceptions import NoSuchElementException
 
 import util
 
@@ -253,6 +254,24 @@ def candidate_not_sent(sent_candidates, user, campaign):
     return sum(sent_candidates[KEY] == get_key(user, campaign)) == 0
 
 
+def send_user_with_cv(current_cv_path, user):
+    cv_path = poll_for_last_download(current_cv_path)
+    with open(cv_path, 'rb') as cv:
+        response = requests.post(util.get_root_url() + '/api/v1/register',
+                                 data=user,
+                                 files={'curriculum_url': cv})
+    print('user cv_path: ' + cv_path)
+
+    return response
+
+
+def get_icon(browser, second_class):
+    try:
+        return browser.find_element_by_css_selector(".icon.{}".format(second_class))
+    except NoSuchElementException:
+        return None
+
+
 def run():
     cities = get_cities()
     campaigns = get_campaigns()
@@ -298,16 +317,17 @@ def run():
                         children = browser.find_element_by_id('cvCandidatePdf').find_elements_by_xpath(".//*")
                         current_cv_path = get_last_download_path()
 
-                        if len(children) == 4:
-                            children[-1].click()
-                            cv_path = poll_for_last_download(current_cv_path)
-                            with open(cv_path, 'rb') as cv:
-                                response = requests.post(util.get_root_url() + '/api/v1/register',
-                                                         data=user,
-                                                         files={'curriculum_url': cv})
-                            print('user cv_path: ' + cv_path)
+                        # TODO: if found more formats, please add:
+                        pdf_icon = get_icon(browser, 'pdf_hdv')
+                        doc_icon = get_icon(browser, 'doc_hdv')
 
-                        else:  # no cv case
+                        if pdf_icon:
+                            pdf_icon.click()
+                            response = send_user_with_cv(current_cv_path, user)
+                        elif doc_icon:
+                            doc_icon.click()
+                            response = send_user_with_cv(current_cv_path, user)
+                        else:
                             response = requests.post(util.get_root_url() + '/api/v1/register', data=user)
 
                         print('user data:')
