@@ -314,7 +314,6 @@ def run():
 
                     if user.get(EMAIL) and candidate_not_sent(sent_candidates, user, campaign):
 
-                        children = browser.find_element_by_id('cvCandidatePdf').find_elements_by_xpath(".//*")
                         current_cv_path = get_last_download_path()
 
                         # TODO: if found more formats, please add:
