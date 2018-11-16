@@ -295,24 +295,24 @@ def run():
 
                     if user.get(EMAIL) and candidate_not_sent(sent_candidates, user, campaign):
 
-                        parent = browser.find_element_by_id('cvCandidatePdf')
+                        children = browser.find_element_by_id('cvCandidatePdf').find_elements_by_xpath(".//*")
                         current_cv_path = get_last_download_path()
-                        parent.click()
 
-                        cv_path = poll_for_last_download(current_cv_path)
-
-                        if cv_path:
+                        if len(children) == 4:
+                            children[-1].click()
+                            cv_path = poll_for_last_download(current_cv_path)
                             with open(cv_path, 'rb') as cv:
                                 response = requests.post(util.get_root_url() + '/api/v1/register',
                                                          data=user,
                                                          files={'curriculum_url': cv})
+                            print('user cv_path: ' + cv_path)
+
                         else:  # no cv case
                             response = requests.post(util.get_root_url() + '/api/v1/register', data=user)
 
                         print('user data:')
                         print(user)
-                        if cv_path:
-                            print('user cv_path: ' + cv_path)
+
                         print('sent user with response: ' + str(response.status_code))
 
                         sent_candidates = sent_candidates.append([{EMAIL: user[EMAIL],
