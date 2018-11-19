@@ -288,6 +288,7 @@ def run():
     for subscribed_obj in post_list_html.find_all('li', class_='inscritos'):
 
         a = subscribed_obj.find('a', href=True)
+
         if a is not None and a.text:
             url = get_complete_bolsa_url(a['href'])
             print('accessing: ' + url)
@@ -296,49 +297,102 @@ def run():
 
             campaign = get_campaign_with_id(campaigns, profile_list_html)
 
-            for profile_article in profile_list_html.find_all('article', class_='rowuser pos_rel cp'):
+            a = profile_list_html.find('a', class_='js-o-link nom ')
 
-                a = profile_article.find('a', class_='js-o-link nom ')
-                if a is None:
-                    a = profile_article.find('a', class_='js-o-link nom visited')
+            if a is None:
+                a = profile_list_html.find('a', class_='js-o-link nom visited')
 
-                if a is not None and a.text:
+            if a is not None and a.text:
 
-                    url = get_complete_bolsa_url(a['href'])
-                    print('accessing: ' + url)
-                    browser.get(url)
+                url = get_complete_bolsa_url(a['href'])
+                print('accessing: ' + url)
+                browser.get(url)
 
-                    user = scrap_profile(html_source=browser.page_source,
-                                         cities=cities,
-                                         campaign=campaign)
+            cont = 1
 
-                    if user.get(EMAIL) and candidate_not_sent(sent_candidates, user, campaign):
+            while cont > 0:
 
-                        current_cv_path = get_last_download_path()
+                user = scrap_profile(html_source=browser.page_source,
+                                     cities=cities,
+                                     campaign=campaign)
 
-                        # TODO: if found more formats, please add:
-                        pdf_icon = get_icon(browser, 'pdf_hdv')
-                        doc_icon = get_icon(browser, 'doc_hdv')
+                if user.get(EMAIL) and candidate_not_sent(sent_candidates, user, campaign):
 
-                        if pdf_icon:
-                            pdf_icon.click()
-                            response = send_user_with_cv(current_cv_path, user)
-                        elif doc_icon:
-                            doc_icon.click()
-                            response = send_user_with_cv(current_cv_path, user)
-                        else:
-                            response = requests.post(util.get_root_url() + '/api/v1/register', data=user)
+                    current_cv_path = get_last_download_path()
 
-                        print('user data:')
-                        print(user)
+                    # TODO: if found more formats, please add:
+                    pdf_icon = get_icon(browser, 'pdf_hdv')
+                    doc_icon = get_icon(browser, 'doc_hdv')
 
-                        print('sent user with response: ' + str(response.status_code))
+                    if pdf_icon:
+                        pdf_icon.click()
+                        response = send_user_with_cv(current_cv_path, user)
+                    elif doc_icon:
+                        doc_icon.click()
+                        response = send_user_with_cv(current_cv_path, user)
+                    else:
+                        response = requests.post(util.get_root_url() + '/api/v1/register', data=user)
 
-                        sent_candidates = sent_candidates.append([{EMAIL: user[EMAIL],
-                                                                   CAMPAIGN_ID: user.get(CAMPAIGN_ID),
-                                                                   KEY: get_key(user, campaign)}])
+                    print('user data:')
+                    print(user)
+
+                    print('sent user with response: ' + str(response.status_code))
+
+                    sent_candidates = sent_candidates.append([{EMAIL: user[EMAIL],
+                                                               CAMPAIGN_ID: user.get(CAMPAIGN_ID),
+                                                               KEY: get_key(user, campaign)}])
+                try:
+                    next_btn = browser.find_element_by_id('js-next')
+                    next_btn.click()
+                    cont = cont + 1
+                except NoSuchElementException:
+                    cont = 0
 
     sent_candidates.to_csv(CSV_FILENAME, sep=',')
+    '''
+                for profile_article in profile_list_html.find_all('article', class_='rowuser pos_rel cp'):
+
+                    a = profile_article.find('a', class_='js-o-link nom ')
+
+                    if a is None:
+                        a = profile_article.find('a', class_='js-o-link nom visited')
+
+                    if a is not None and a.text:
+
+                        url = get_complete_bolsa_url(a['href'])
+                        print('accessing: ' + url)
+                        browser.get(url)
+
+                        user = scrap_profile(html_source=browser.page_source,
+                                             cities=cities,
+                                             campaign=campaign)
+
+                        if user.get(EMAIL) and candidate_not_sent(sent_candidates, user, campaign):
+
+                            current_cv_path = get_last_download_path()
+
+                            # TODO: if found more formats, please add:
+                            pdf_icon = get_icon(browser, 'pdf_hdv')
+                            doc_icon = get_icon(browser, 'doc_hdv')
+
+                            if pdf_icon:
+                                pdf_icon.click()
+                                response = send_user_with_cv(current_cv_path, user)
+                            elif doc_icon:
+                                doc_icon.click()
+                                response = send_user_with_cv(current_cv_path, user)
+                            else:
+                                response = requests.post(util.get_root_url() + '/api/v1/register', data=user)
+
+                            print('user data:')
+                            print(user)
+
+                            print('sent user with response: ' + str(response.status_code))
+
+                            sent_candidates = sent_candidates.append([{EMAIL: user[EMAIL],
+                                                                       CAMPAIGN_ID: user.get(CAMPAIGN_ID),
+                                                                       KEY: get_key(user, campaign)}])
+                '''
 
 
 if __name__ == '__main__':
