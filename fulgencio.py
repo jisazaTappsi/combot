@@ -45,8 +45,9 @@ def get_profile(split):
 
     pattern = f'{FULGENCIO_URL}\S*'
     big_url = re.search(pattern, almost).group()
+    absolute_url = str(big_url.split('?')[0])
 
-    return big_url.split('?')[0]
+    return absolute_url.replace(FULGENCIO_URL, '')
 
 
 def filter_posts_with_email(df):
@@ -161,12 +162,42 @@ def scrape_company_url(results, browser):
 
     # Save final result
     # Escape odd chars and Save partial result
-    results = results.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
+    results = results.apply(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
     results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
+
+
+def get_leads_to_filter():
+    r = requests.post(urllib.parse.urljoin(util.get_root_url(), 'api/get_leads_to_filter'))
+    print(r.status_code)
+    if r.status_code != 200:
+        raise AssertionError('leads to filter cannot be obtained')
+    return r.json()
+
+
+def save_leads_in_api(results):
+    results.fillna('', inplace=True)
+    r = requests.post(urllib.parse.urljoin(util.get_root_url(), 'api/save_leads'),
+                      {'names': results['name'], 'facebook_urls': results.index.values,
+                      'phones': results['phone'], 'emails': results['email']})
+    print(r.status_code)
+    if r.status_code != 200:
+        raise AssertionError("leads couldn't be saved")
+
+
+def filter_results_with_leads(results, leads_to_filter):
+    if FILTER_LEADS:
+        results = results[results.index.map(lambda x: x not in leads_to_filter)]
+    return results
+
+
+def filter_results(results):
+    leads_to_filter = get_leads_to_filter()
+    return filter_results_with_leads(results, leads_to_filter)
 
 
 def scrape_all(browser):
     results = pd.DataFrame(columns=COLUMNS)
+    leads_to_filter = get_leads_to_filter()
 
     for idx, (group_name, group_url, scroll_steps) in enumerate(values.get_groups()):
 
@@ -186,24 +217,17 @@ def scrape_all(browser):
                 print(f'scraped word: {word}, done')
 
             # Escape odd chars and Save partial result
-            results = results.applymap(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
-            results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
+            results = results.apply(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
+            results = filter_results_with_leads(results, leads_to_filter)
+            results.to_excel('leads.xlsx')
             print(f'saved results for: {group_name}')
         except MemoryError:
             pass
 
     scrape_company_url(results, browser)
 
-    r = requests.post(urllib.parse.urljoin(util.get_root_url(), 'api/save_leads'),  # 'login_user'),
-                     {'names': results['name'], 'facebook_urls': results.index.values,
-                      'phones': results['phone'], 'emails': results['email']})
-    print(r.status_code)
-
-    if FILTER_LEADS:
-        results = results[results.index not in r.json()]
-
     return results
 
 
 if __name__ == '__main__':
-    scrape_all(util.load_browser_and_login(config('fulgencio_url')))
+    scrape_all(util.load_browser_and_login(FULGENCIO_URL))

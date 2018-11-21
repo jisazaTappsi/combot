@@ -5,6 +5,8 @@ import platform
 import pyautogui
 import re
 import statistics
+import pandas as pd
+
 from cts import *
 import unicodedata
 
@@ -132,6 +134,57 @@ def remove_accents_in_string(element):
 
 def get_html(browser):
     return browser.page_source.lower()
+
+
+def get_b2b_message():
+    with open('B2B_message.txt', encoding='latin-1') as f:
+        return f.read()
+
+
+# TODO: add more countries
+def get_first_mobile_phone(phones):
+    """
+    :return: Gets first phone that complies with mobile phone rules in Colombia or None
+    """
+    if phones:
+        for p in get_list_from_print(phones):
+            if is_colombia_mobile(p):
+                return p
+
+
+def get_first_email(emails):
+    """
+    :return: Gets first email or return None
+    """
+    if emails:
+        for e in get_list_from_print(emails):
+            return e
+
+
+def remove_leads_with_no_phone(df):
+    return df.dropna(subset=['phone'], axis=0)
+
+
+def remove_leads_with_no_email(df):
+    return df.dropna(subset=['email'], axis=0)
+
+
+def read_excel_leads():
+    df = pd.read_excel('leads.xlsx')
+    df['phone'] = df['phones'].apply(get_first_mobile_phone)
+    df['email'] = df['emails'].apply(get_first_email)
+    return df
+
+
+def read_phone_excel_leads():
+    df = read_excel_leads()
+    df['message'] = get_b2b_message().encode('ISO-8859-1')
+    return remove_leads_with_no_phone(df)
+
+
+def read_email_excel_leads():
+    df = read_excel_leads()
+    return remove_leads_with_no_email(df)
 
 
 if __name__ == '__main__':
