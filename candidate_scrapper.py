@@ -88,7 +88,7 @@ def get_city(cities, city_field):
 
 def get_campaign_with_id(campaigns, profile_list_html):
 
-    campaign_name = profile_list_html.find('p', class_='gescan_subtit').span.text.replace('Oferta', '')
+    campaign_name = profile_list_html.find(id='pMembPack').span.text
     campaign_name = util.remove_accents_in_string(campaign_name.lower().strip())
 
     matches = re.findall(r'\d+', campaign_name)
@@ -255,14 +255,21 @@ def candidate_not_sent(sent_candidates, user, campaign):
 
 
 def send_user_with_cv(current_cv_path, user):
-    cv_path = poll_for_last_download(current_cv_path)
-    with open(cv_path, 'rb') as cv:
-        response = requests.post(util.get_root_url() + '/api/v1/register',
-                                 data=user,
-                                 files={'curriculum_url': cv})
-    print('user cv_path: ' + cv_path)
 
-    return response
+    cv_path = poll_for_last_download(current_cv_path)
+
+    if cv_path is not None:
+
+        with open(cv_path, 'rb') as cv:
+            response = requests.post(util.get_root_url() + '/api/v1/register',
+                                     data=user,
+                                     files={'curriculum_url': cv})
+        print('user cv_path: ' + cv_path)
+
+        return response
+
+    else:
+        return requests.post(util.get_root_url() + '/api/v1/register', data=user)
 
 
 def get_icon(browser, second_class):
@@ -270,6 +277,43 @@ def get_icon(browser, second_class):
         return browser.find_element_by_css_selector(".icon.{}".format(second_class))
     except NoSuchElementException:
         return None
+
+
+def scrap_candidate(campaigns, cities, browser, sent_candidates):
+
+    campaign = get_campaign_with_id(campaigns, BeautifulSoup(browser.page_source, 'html.parser'))
+
+    user = scrap_profile(html_source=browser.page_source,
+                         cities=cities,
+                         campaign=campaign)
+
+    if user.get(EMAIL) and candidate_not_sent(sent_candidates, user, campaign):
+
+        current_cv_path = get_last_download_path()
+
+        # TODO: if found more formats, please add:
+        pdf_icon = get_icon(browser, 'pdf_hdv')
+        doc_icon = get_icon(browser, 'doc_hdv')
+
+        if pdf_icon:
+            pdf_icon.click()
+            response = send_user_with_cv(current_cv_path, user)
+        elif doc_icon:
+            doc_icon.click()
+            response = send_user_with_cv(current_cv_path, user)
+        else:
+            response = requests.post(util.get_root_url() + '/api/v1/register', data=user)
+
+        print('user data:')
+        print(user)
+
+        print('sent user with response: ' + str(response.status_code))
+
+        return sent_candidates.append([{EMAIL: user[EMAIL],
+                                       CAMPAIGN_ID: user.get(CAMPAIGN_ID),
+                                       KEY: get_key(user, campaign)}])
+    else:
+        return sent_candidates
 
 
 def run():
@@ -283,62 +327,39 @@ def run():
 
     browser = load_browser_and_login(config('bolsa1_url'))
 
-    post_list_html = BeautifulSoup(browser.page_source, 'lxml')
+    post_list_html = BeautifulSoup(browser.page_source, 'html.parser')
 
     for subscribed_obj in post_list_html.find_all('li', class_='inscritos'):
 
         a = subscribed_obj.find('a', href=True)
+
         if a is not None and a.text:
             url = get_complete_bolsa_url(a['href'])
             print('accessing: ' + url)
             browser.get(url)
             profile_list_html = BeautifulSoup(browser.page_source, 'html.parser')
 
-            campaign = get_campaign_with_id(campaigns, profile_list_html)
+            a = profile_list_html.find('a', class_='js-o-link nom ')
 
-            for profile_article in profile_list_html.find_all('article', class_='rowuser pos_rel cp'):
+            if a is None:
+                a = profile_list_html.find('a', class_='js-o-link nom visited')
 
-                a = profile_article.find('a', class_='js-o-link nom ')
-                if a is None:
-                    a = profile_article.find('a', class_='js-o-link nom visited')
+            if a is not None and a.text:
 
-                if a is not None and a.text:
+                url = get_complete_bolsa_url(a['href'])
+                print('accessing: ' + url)
+                browser.get(url)
 
-                    url = get_complete_bolsa_url(a['href'])
-                    print('accessing: ' + url)
-                    browser.get(url)
+                while True:
 
-                    user = scrap_profile(html_source=browser.page_source,
-                                         cities=cities,
-                                         campaign=campaign)
+                    sent_candidates = scrap_candidate(campaigns, cities, browser, sent_candidates)
+                    sent_candidates.to_csv(CSV_FILENAME, sep=',')
 
-                    if user.get(EMAIL) and candidate_not_sent(sent_candidates, user, campaign):
-
-                        current_cv_path = get_last_download_path()
-
-                        # TODO: if found more formats, please add:
-                        pdf_icon = get_icon(browser, 'pdf_hdv')
-                        doc_icon = get_icon(browser, 'doc_hdv')
-
-                        if pdf_icon:
-                            pdf_icon.click()
-                            response = send_user_with_cv(current_cv_path, user)
-                        elif doc_icon:
-                            doc_icon.click()
-                            response = send_user_with_cv(current_cv_path, user)
-                        else:
-                            response = requests.post(util.get_root_url() + '/api/v1/register', data=user)
-
-                        print('user data:')
-                        print(user)
-
-                        print('sent user with response: ' + str(response.status_code))
-
-                        sent_candidates = sent_candidates.append([{EMAIL: user[EMAIL],
-                                                                   CAMPAIGN_ID: user.get(CAMPAIGN_ID),
-                                                                   KEY: get_key(user, campaign)}])
-
-    sent_candidates.to_csv(CSV_FILENAME, sep=',')
+                    try:
+                        next_btn = browser.find_element_by_id('js-next')
+                        next_btn.click()
+                    except NoSuchElementException:
+                        break
 
 
 if __name__ == '__main__':
