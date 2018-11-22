@@ -1,6 +1,5 @@
 import requests
 from decouple import config
-
 import util
 from cts import *
 import fulgencio
@@ -35,12 +34,14 @@ def run():
     emails = [util.get_list_from_print(string_list) for string_list in list(email_leads['emails'])]
     emails = util.flatten_list(emails)
 
-    with open('email_body.txt', 'r', encoding='utf-8') as email_body:
-        with open('email_subject.txt', 'r', encoding='utf-8') as email_subject:
+    with open('email_body.txt', 'r', encoding='latin-1') as email_body:
+        with open('email_subject.txt', 'r', encoding='latin-1') as email_subject:
             if not DEBUG:
                 mail_gun_post(emails, email_subject.read(), email_body.read())
 
     fulgencio.save_leads_in_api(email_leads)
+
+    print('Se enviaron: ', len(email_leads['emails']), 'correos')
 
 
 if __name__ == '__main__':
