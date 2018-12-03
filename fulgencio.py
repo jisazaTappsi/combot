@@ -86,7 +86,7 @@ def scrap_word(word, df, html, group_name, group_url):
     posts = re.findall(post_pattern, html)
     for idx, split in enumerate(splits):
         profile = get_profile(split)
-        if profile and FULGENCIO_URL in profile:
+        if profile:
             post = posts[idx].replace('>', '').replace('<', '')
             post = post[:min(2000, len(post))]
             if profile in list(df.index.values):
