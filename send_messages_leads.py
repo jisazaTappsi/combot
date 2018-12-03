@@ -10,8 +10,6 @@ def run():
     phone_leads = util.read_phone_excel_leads()
     phone_leads = fulgencio.filter_results(phone_leads)
 
-    print(phone_leads)
-
     if not DEBUG:
 
         r = requests.post(urllib.parse.urljoin(util.get_root_url(), 'api/add_messages'),
