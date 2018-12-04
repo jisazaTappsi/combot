@@ -10,6 +10,8 @@ from decouple import config
 from selenium.common.exceptions import WebDriverException
 import requests
 import urllib.parse
+from openpyxl.utils.exceptions import IllegalCharacterError
+
 
 import util
 import values
@@ -137,7 +139,7 @@ def get_file(name):
         return my_file.readlines()
 
 
-def scrape_company_url(results, browser):
+def scrape_company_url(results, browser, leads_to_filter):
     """
     The Angarita automation
     :return:
@@ -160,10 +162,7 @@ def scrape_company_url(results, browser):
             except WebDriverException:
                 print(f'failed to load {row[COMPANY_URL]}, continuing...')
 
-    # Save final result
-    # Escape odd chars and Save partial result
-    results = results.apply(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
-    results.sort_values(by='count', ascending=False).to_excel('leads.xlsx')
+    save_leads_to_excel(results, leads_to_filter)
 
 
 def get_leads_to_filter():
@@ -195,6 +194,18 @@ def filter_results(results):
     return filter_results_with_leads(results, leads_to_filter)
 
 
+def save_leads_to_excel(leads, leads_to_filter):
+
+    # Escape odd chars and Save partial result
+    leads = leads.apply(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
+    leads = filter_results_with_leads(leads, leads_to_filter)
+
+    try:
+        leads.to_excel('leads.xlsx')
+    except IllegalCharacterError:
+        print('caught and IllegalCharacterError while saving leads, will not save and continue...')
+
+
 def scrape_all(browser):
     results = pd.DataFrame(columns=COLUMNS)
     leads_to_filter = get_leads_to_filter()
@@ -216,15 +227,13 @@ def scrape_all(browser):
                                      group_name=group_name)
                 print(f'scraped word: {word}, done')
 
-            # Escape odd chars and Save partial result
-            results = results.apply(lambda x: x.encode('unicode_escape').decode('utf-8') if isinstance(x, str) else x)
-            results = filter_results_with_leads(results, leads_to_filter)
-            results.to_excel('leads.xlsx')
+            save_leads_to_excel(results, leads_to_filter)
+
             print(f'saved results for: {group_name}')
         except MemoryError:
             pass
 
-    scrape_company_url(results, browser)
+    scrape_company_url(results, browser, leads_to_filter)
 
     return results
 
