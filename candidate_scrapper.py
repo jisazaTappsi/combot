@@ -136,7 +136,7 @@ def scrap_profile(html_source, cities, campaign):
 
     phones_obj = profile_soup.find_all('span', class_='fl fw_n mt3')
 
-    if phones_obj[0]:
+    if len(phones_obj) > 0 and phones_obj[0]:
         user['phone'] = phones_obj[0].text
 
     if len(phones_obj) > 1 and phones_obj[1]:
