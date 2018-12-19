@@ -327,16 +327,30 @@ def run():
 
     browser = load_browser_and_login(config('bolsa1_url'))
 
+    browser.find_element_by_id('recruitment').click()
+
     post_list_html = BeautifulSoup(browser.page_source, 'html.parser')
 
-    for subscribed_obj in post_list_html.find_all('li', class_='inscritos'):
+    href_list = post_list_html.find_all('a', 'fw_b')
 
-        a = subscribed_obj.find('a', href=True)
+    while True:
 
-        if a is not None and a.text:
+        try:
+            next_btn = browser.find_element_by_class_name('siguiente')
+            next_btn.click()
+            post_list_html = BeautifulSoup(browser.page_source, 'html.parser')
+            href_list += post_list_html.find_all('a', 'fw_b')
+
+        except NoSuchElementException:
+            break
+
+    for a in href_list:
+
+        if a is not None and a['href']:
             url = get_complete_bolsa_url(a['href'])
             print('accessing: ' + url)
             browser.get(url)
+            
             profile_list_html = BeautifulSoup(browser.page_source, 'html.parser')
 
             a = profile_list_html.find('a', class_='js-o-link nom ')
