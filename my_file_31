@@ -63,3 +63,4 @@ print('and the num is='num=4)
 from random import randint;print('and the num is{randint(1,100)}')
 python3.8 -c from random import randint;print('and the num is{randint(1,100)}')
 and the num is{randint(1,100)}
+and the num is1
